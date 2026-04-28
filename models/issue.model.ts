@@ -1,11 +1,3 @@
-/**
- * MODEL — Issue
- *
- * This file ONLY performs database queries via Prisma.
- * No business logic, no validation, no HTTP concerns.
- * Controllers call these functions; nothing else does.
- */
-
 import { prisma } from "@/lib/prisma";
 import { IssueStatus } from "@prisma/client";
 
@@ -18,10 +10,9 @@ export type CreateIssueInput = {
   reportedById: string;
 };
 
-// Shared include shape used by all queries so the UI always gets the same shape.
 const issueInclude = {
-  reportedBy: { select: { id: true, name: true, email: true } },
-  assignedTo: { select: { id: true, name: true, email: true } },
+  reportedBy: { select: { id: true, name: true, email: true, avatarUrl: true, displayName: true } },
+  assignedTo: { select: { id: true, name: true, email: true, avatarUrl: true, displayName: true } },
 };
 
 export const IssueModel = {
@@ -64,7 +55,6 @@ export const IssueModel = {
     });
   },
 
-  // Assign a worker to an issue and flip status to ASSIGNED atomically.
   assign(id: string, workerId: string) {
     return prisma.issue.update({
       where: { id },
@@ -73,11 +63,22 @@ export const IssueModel = {
     });
   },
 
-  // Generic status update (transition rules are enforced in the controller).
-  updateStatus(id: string, status: IssueStatus, extra?: { assignedToId?: string | null }) {
+  updateStatus(
+    id: string,
+    status: IssueStatus,
+    extra?: { assignedToId?: string | null; completionImageUrl?: string }
+  ) {
     return prisma.issue.update({
       where: { id },
       data: { status, ...extra },
+      include: issueInclude,
+    });
+  },
+
+  setReward(id: string, rewardPoints: number) {
+    return prisma.issue.update({
+      where: { id },
+      data: { rewardPoints },
       include: issueInclude,
     });
   },

@@ -1,20 +1,25 @@
-import { CheckIcon, MapPin, WrenchIcon } from "lucide-react";
+import { Location01Icon, Wrench01Icon, CheckmarkCircle01Icon } from "hugeicons-react";
 import Image from "next/image";
 import Link from "next/link";
+
+const FEATURES = [
+  { icon: Location01Icon, label: "Report Issues" },
+  { icon: Wrench01Icon, label: "Track Progress" },
+  { icon: CheckmarkCircle01Icon, label: "Get Resolved" },
+];
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen flex">
       {/* Left panel — brand */}
       <div className="hidden lg:flex lg:w-[45%] flex-col justify-between bg-brand-800 p-12 relative overflow-hidden">
-        {/* Background decoration */}
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-[-20%] right-[-20%] w-[600px] h-[600px] rounded-full bg-white" />
-          <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] rounded-full bg-white" />
+          <div className="absolute top-[-20%] right-[-20%] w-150 h-150 rounded-full bg-white" />
+          <div className="absolute bottom-[-10%] left-[-10%] w-100 h-100 rounded-full bg-white" />
         </div>
 
-        <Link href="/" className="relative z-10 flex items-center gap-1">
-          <Image src="/favicon.png" width={500} height={500} alt="MyIfrane Icon" className="size-[3em]" />
+        <Link href="/" className="relative z-10 flex items-center gap-2">
+          <Image src="/favicon.png" width={40} height={40} alt="MyIfrane" />
           <span className="text-2xl font-bold text-white tracking-tight">MyIfrane</span>
         </Link>
 
@@ -31,13 +36,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </div>
 
         <div className="relative z-10 grid grid-cols-3 gap-4">
-          {[
-            { icon: MapPin, label: "Report Issues" },
-            { icon: WrenchIcon, label: "Track Progress" },
-            { icon: CheckIcon, label: "Get Resolved" },
-          ].map(({ icon:Icon, label }) => (
-            <div key={label} className="bg-white/10 rounded-xl p-3 text-center backdrop-blur-sm flex flex-col justify-center items-center">
-              <div className="text-xl mb-1 text-white"><Icon/></div>
+          {FEATURES.map(({ icon: Icon, label }) => (
+            <div key={label} className="bg-white/10 rounded-xl p-3 text-center backdrop-blur-sm flex flex-col justify-center items-center gap-1.5">
+              <Icon size={20} className="text-white" />
               <div className="text-xs text-brand-100 font-medium">{label}</div>
             </div>
           ))}
@@ -45,12 +46,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </div>
 
       {/* Right panel — form */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 bg-white">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 bg-white dark:bg-neutral-950">
         <div className="w-full max-w-sm">
-          {/* Mobile logo */}
           <Link href="/" className="lg:hidden flex items-center gap-2 mb-8">
-            <img src="/favicon.png" alt="MyIfrane Icon" className="w-5 h-5" />
-            <span className="text-xl font-bold text-brand-800">MyIfrane</span>
+            <Image src="/favicon.png" width={20} height={20} alt="MyIfrane" />
+            <span className="text-xl font-bold text-brand-800 dark:text-brand-400">MyIfrane</span>
           </Link>
           {children}
         </div>

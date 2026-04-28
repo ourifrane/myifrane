@@ -1,10 +1,3 @@
-/**
- * API ROUTE — GET /api/auth/me
- *
- * Responsibility: return the current user's session data.
- * Used by the client to rehydrate auth state on page load.
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth } from "@/lib/middleware";
 import { UserModel } from "@/models/user.model";
@@ -19,5 +12,7 @@ export const GET = withAuth(async (_req: NextRequest, session) => {
     email: user.email,
     role: user.role,
     approved: user.approved,
+    avatarUrl: user.avatarUrl ?? null,
+    displayName: user.displayName ?? null,
   });
 });

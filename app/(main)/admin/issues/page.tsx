@@ -3,86 +3,105 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
-import IssueCard, { IssueSummary } from "@/components/IssueCard";
-import { Loader2, SearchXIcon } from "lucide-react";
+import dynamic from "next/dynamic";
+import DataTable, { STATUS_CONFIG, ColumnDef } from "@/app/(main)/components/DataTable";
 
-type Filter = "ALL" | "OPEN" | "ASSIGNED" | "COMPLETED" | "CANCELLED";
+const MapView = dynamic(() => import("@/app/(main)/components/MapView"), { ssr: false });
 
-const FILTERS: { value: Filter; label: string }[] = [
-  { value: "ALL", label: "All" },
-  { value: "OPEN", label: "Open" },
-  { value: "ASSIGNED", label: "Assigned" },
-  { value: "COMPLETED", label: "Completed" },
-  { value: "CANCELLED", label: "Cancelled" },
+type IssueRow = {
+  id: string;
+  type: string;
+  description: string;
+  status: string;
+  latitude: number;
+  longitude: number;
+  createdAt: string;
+  updatedAt: string;
+  reportedBy: { name: string; email: string; avatarUrl?: string | null; displayName?: string | null };
+  assignedTo: { name: string; avatarUrl?: string | null; displayName?: string | null } | null;
+};
+
+type FlatRow = {
+  id: string;
+  type: string;
+  description: string;
+  status: string;
+  latitude: number;
+  longitude: number;
+  createdAt: string;
+  reporterName: string;
+  reporterEmail: string;
+  reporterAvatar: string | null;
+  reporterDisplay: string | null;
+  workerName: string;
+};
+
+const COLUMNS: ColumnDef<FlatRow>[] = [
+  { type: "text", label: "Type", key: "type", sortable: true },
+  {
+    type: "user",
+    label: "Reporter",
+    nameKey: "reporterName",
+    emailKey: "reporterEmail",
+    avatarKey: "reporterAvatar",
+    displayNameKey: "reporterDisplay",
+  },
+  {
+    type: "enum",
+    label: "Status",
+    key: "status",
+    config: STATUS_CONFIG,
+    options: ["OPEN", "ASSIGNED", "COMPLETED", "CANCELLED"],
+  },
+  { type: "text", label: "Worker", key: "workerName", sortable: true },
+  { type: "date", label: "Reported", key: "createdAt", sortable: true },
 ];
 
 export default function AdminIssuesPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-
-  const [issues, setIssues] = useState<IssueSummary[]>([]);
+  const [issues, setIssues] = useState<IssueRow[]>([]);
   const [fetching, setFetching] = useState(true);
-  const [filter, setFilter] = useState<Filter>("ALL");
 
   useEffect(() => {
     if (loading) return;
     if (!user || user.role !== "ADMIN") { router.replace("/"); return; }
-
-    fetch("/api/issues")
-      .then((r) => r.json())
-      .then(setIssues)
-      .finally(() => setFetching(false));
+    fetch("/api/issues").then((r) => r.json()).then(setIssues).finally(() => setFetching(false));
   }, [user, loading, router]);
 
-  if (loading || fetching) {
-    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-text-tertiary" /></div>;
-  }
+  const rows: FlatRow[] = issues.map((i) => ({
+    id: i.id,
+    type: i.type,
+    description: i.description,
+    status: i.status,
+    latitude: i.latitude,
+    longitude: i.longitude,
+    createdAt: i.createdAt,
+    reporterName: i.reportedBy.name,
+    reporterEmail: i.reportedBy.email,
+    reporterAvatar: i.reportedBy.avatarUrl ?? null,
+    reporterDisplay: i.reportedBy.displayName ?? null,
+    workerName: i.assignedTo ? (i.assignedTo.displayName || i.assignedTo.name) : "—",
+  }));
 
-  const displayed = filter === "ALL" ? issues : issues.filter((i) => i.status === filter);
+  const mapPins = issues.map((i) => ({ id: i.id, lat: i.latitude, lng: i.longitude, status: i.status, type: i.type }));
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-text-primary">All Issues</h1>
+        <h1 className="text-2xl font-bold text-text-primary dark:text-neutral-100">All Issues</h1>
         <p className="text-text-secondary text-sm mt-0.5">{issues.length} total</p>
       </div>
 
-      {/* Filter chips */}
-      <div className="flex flex-wrap gap-2">
-        {FILTERS.map(({ value, label }) => {
-          const count = value === "ALL" ? issues.length : issues.filter((i) => i.status === value).length;
-          return (
-            <button
-              key={value}
-              onClick={() => setFilter(value)}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-sm font-medium transition ${
-                filter === value
-                  ? "bg-brand-700 text-white shadow-sm"
-                  : "bg-white border border-border text-text-secondary hover:border-border-strong"
-              }`}
-            >
-              {label}
-              <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
-                filter === value ? "bg-white/20 text-white" : "bg-surface-overlay text-text-tertiary"
-              }`}>
-                {count}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+      <MapView issues={mapPins} />
 
-      {/* Issues */}
-      {displayed.length === 0 ? (
-        <div className="text-center py-16 text-text-tertiary flex flex-col items-center">
-          <p className="text-3xl mb-2"><SearchXIcon className="size-18"/></p>
-          <p className="text-sm">No {filter !== "ALL" ? filter.toLowerCase() : ""} issues found.</p>
-        </div>
-      ) : (
-        <div className="space-y-2.5">
-          {displayed.map((issue) => <IssueCard key={issue.id} issue={issue} />)}
-        </div>
-      )}
+      <DataTable
+        data={rows}
+        columns={COLUMNS}
+        loading={fetching}
+        emptyMessage="No issues found."
+        rowHref={(row) => `/issues/${row.id}`}
+      />
     </div>
   );
 }

@@ -1,12 +1,3 @@
-/**
- * API ROUTE — /api/issues/[id]
- *
- * GET   → get a single issue
- * PATCH → update issue status (WORKER or ADMIN)
- *
- * No business logic here — parse, delegate, respond.
- */
-
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, withRole } from "@/lib/middleware";
 import { getIssueById, updateIssueStatus } from "@/controllers/issueController";
@@ -27,13 +18,19 @@ export const GET = withAuth(async (req: NextRequest, session) => {
 export const PATCH = withRole([Role.WORKER, Role.ADMIN], async (req: NextRequest, session) => {
   try {
     const id = req.nextUrl.pathname.split("/").at(-1)!;
-    const { status } = await req.json();
+    const body = await req.json();
+    const { status, completionImageUrl } = body;
 
     if (!Object.values(IssueStatus).includes(status)) {
       return NextResponse.json({ error: "Invalid status value" }, { status: 400 });
     }
 
-    const updated = await updateIssueStatus(id, status as IssueStatus, session);
+    const updated = await updateIssueStatus(
+      id,
+      status as IssueStatus,
+      session,
+      completionImageUrl ? { completionImageUrl } : undefined
+    );
     return NextResponse.json(updated);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to update issue";

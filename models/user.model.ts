@@ -1,19 +1,17 @@
-/**
- * MODEL — User
- *
- * This file ONLY performs database queries via Prisma.
- * No business logic, no validation, no HTTP concerns.
- * Controllers call these functions; nothing else does.
- */
-
 import { prisma } from "@/lib/prisma";
 import { Role } from "@prisma/client";
 
 export type CreateUserInput = {
   name: string;
   email: string;
-  password: string; // already hashed before it reaches here
+  password: string;
   role?: Role;
+  workerNotes?: string;
+};
+
+export type UpdateProfileInput = {
+  displayName?: string;
+  avatarUrl?: string;
 };
 
 export const UserModel = {
@@ -38,18 +36,23 @@ export const UserModel = {
         email: true,
         role: true,
         approved: true,
+        avatarUrl: true,
+        displayName: true,
+        workerNotes: true,
         createdAt: true,
       },
     });
   },
 
-  // Admin: approve or reject a worker
   setApproved(id: string, approved: boolean) {
     return prisma.user.update({ where: { id }, data: { approved } });
   },
 
-  // Admin: change a user's role
   setRole(id: string, role: Role) {
     return prisma.user.update({ where: { id }, data: { role } });
+  },
+
+  updateProfile(id: string, data: UpdateProfileInput) {
+    return prisma.user.update({ where: { id }, data });
   },
 };

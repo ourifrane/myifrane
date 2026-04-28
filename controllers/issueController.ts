@@ -1,25 +1,6 @@
-/**
- * CONTROLLER — Issue
- *
- * All business rules for issues live here:
- *   - Who can create, view, assign, update, or cancel
- *   - Which status transitions are valid
- *   - What data is required
- *
- * Calls IssueModel for DB access.
- * Returns plain objects — no HTTP concerns (no NextResponse here).
- */
-
 import { IssueStatus, Role } from "@prisma/client";
 import { IssueModel, CreateIssueInput } from "@/models/issue.model";
 import { TokenPayload } from "@/lib/auth";
-
-// ─── Status transition table ──────────────────────────────────────────────────
-//
-// OPEN       → ASSIGNED    (approved WORKER only, via assign endpoint)
-// ASSIGNED   → COMPLETED   (the assigned WORKER only)
-// ASSIGNED   → OPEN        (the assigned WORKER only — cancels their assignment)
-// ANY(!COMPLETED) → CANCELLED  (ADMIN only)
 
 const WORKER_TRANSITIONS: Partial<Record<IssueStatus, IssueStatus[]>> = {
   ASSIGNED: ["COMPLETED", "OPEN"],
@@ -29,8 +10,6 @@ const ADMIN_TRANSITIONS: Partial<Record<IssueStatus, IssueStatus[]>> = {
   OPEN: ["CANCELLED"],
   ASSIGNED: ["CANCELLED"],
 };
-
-// ─── Create ───────────────────────────────────────────────────────────────────
 
 export async function createIssue(
   input: Omit<CreateIssueInput, "reportedById">,
@@ -44,26 +23,18 @@ export async function createIssue(
   return IssueModel.create({ ...input, reportedById: session.userId });
 }
 
-// ─── Read ─────────────────────────────────────────────────────────────────────
-
-// Returns issues scoped by role:
-//   USER   → only their own issues
-//   WORKER → all OPEN issues + issues assigned to them
-//   ADMIN  → everything
 export async function getIssuesForSession(session: TokenPayload) {
-  if (session.role === Role.ADMIN) {
-    return IssueModel.findAll();
-  }
+  if (session.role === Role.ADMIN) return IssueModel.findAll();
+
   if (session.role === Role.WORKER) {
     const [open, mine] = await Promise.all([
       IssueModel.findByStatus("OPEN"),
       IssueModel.findByWorker(session.userId),
     ]);
-    // Deduplicate (worker may appear in both if they just assigned themselves)
     const seen = new Set<string>();
     return [...open, ...mine].filter((i) => (seen.has(i.id) ? false : (seen.add(i.id), true)));
   }
-  // USER
+
   return IssueModel.findByReporter(session.userId);
 }
 
@@ -71,15 +42,12 @@ export async function getIssueById(id: string, session: TokenPayload) {
   const issue = await IssueModel.findById(id);
   if (!issue) throw new Error("Issue not found");
 
-  // USERs can only see their own issues
   if (session.role === Role.USER && issue.reportedById !== session.userId) {
     throw new Error("Not authorised to view this issue");
   }
 
   return issue;
 }
-
-// ─── Assign ───────────────────────────────────────────────────────────────────
 
 export async function assignIssue(issueId: string, session: TokenPayload) {
   if (!session.approved) throw new Error("Your worker account is not approved yet");
@@ -91,18 +59,16 @@ export async function assignIssue(issueId: string, session: TokenPayload) {
   return IssueModel.assign(issueId, session.userId);
 }
 
-// ─── Update status ────────────────────────────────────────────────────────────
-
 export async function updateIssueStatus(
   issueId: string,
   newStatus: IssueStatus,
-  session: TokenPayload
+  session: TokenPayload,
+  extra?: { completionImageUrl?: string }
 ) {
   const issue = await IssueModel.findById(issueId);
   if (!issue) throw new Error("Issue not found");
 
   if (session.role === Role.WORKER) {
-    // Workers can only update issues assigned to them
     if (issue.assignedToId !== session.userId) {
       throw new Error("You can only update issues assigned to you");
     }
@@ -112,9 +78,15 @@ export async function updateIssueStatus(
       throw new Error(`Invalid transition: ${issue.status} → ${newStatus}`);
     }
 
-    // Returning to OPEN means removing the assignment
-    const extra = newStatus === "OPEN" ? { assignedToId: null } : {};
-    return IssueModel.updateStatus(issueId, newStatus, extra);
+    if (newStatus === "COMPLETED" && !extra?.completionImageUrl) {
+      throw new Error("A completion photo is required to mark this issue as done");
+    }
+
+    const updateExtra = newStatus === "OPEN"
+      ? { assignedToId: null }
+      : { completionImageUrl: extra?.completionImageUrl };
+
+    return IssueModel.updateStatus(issueId, newStatus, updateExtra);
   }
 
   if (session.role === Role.ADMIN) {
@@ -122,9 +94,20 @@ export async function updateIssueStatus(
     if (!allowed.includes(newStatus)) {
       throw new Error(`Invalid transition: ${issue.status} → ${newStatus}`);
     }
-
     return IssueModel.updateStatus(issueId, newStatus);
   }
 
   throw new Error("Not authorised to update issue status");
+}
+
+export async function setIssueReward(issueId: string, rewardPoints: number, session: TokenPayload) {
+  if (session.role !== Role.ADMIN) throw new Error("Only admins can set rewards");
+
+  const issue = await IssueModel.findById(issueId);
+  if (!issue) throw new Error("Issue not found");
+  if (issue.status !== "COMPLETED") throw new Error("Can only reward completed issues");
+
+  if (rewardPoints < 0 || rewardPoints > 10000) throw new Error("Points must be between 0 and 10000");
+
+  return IssueModel.setReward(issueId, rewardPoints);
 }

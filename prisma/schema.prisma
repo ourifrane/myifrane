@@ -4,6 +4,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 enum Role {
@@ -20,28 +21,33 @@ enum IssueStatus {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      Role     @default(USER)
-  approved  Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id          String   @id @default(cuid())
+  name        String
+  email       String   @unique
+  password    String
+  role        Role     @default(USER)
+  approved    Boolean  @default(false)
+  avatarUrl   String?
+  displayName String?
+  workerNotes String?
+  createdAt   DateTime @default(now())
 
   reportedIssues Issue[] @relation("ReportedBy")
   assignedIssues Issue[] @relation("AssignedTo")
 }
 
 model Issue {
-  id          String      @id @default(cuid())
-  type        String
-  description String
-  imageUrl    String
-  latitude    Float
-  longitude   Float
-  status      IssueStatus @default(OPEN)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id                 String      @id @default(cuid())
+  type               String
+  description        String
+  imageUrl           String
+  latitude           Float
+  longitude          Float
+  status             IssueStatus @default(OPEN)
+  completionImageUrl String?
+  rewardPoints       Int?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
 
   reportedById String
   reportedBy   User   @relation("ReportedBy", fields: [reportedById], references: [id])

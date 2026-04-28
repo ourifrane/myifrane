@@ -12,6 +12,7 @@ import {
   ShieldCheck,
   UserCircle,
 } from "lucide-react";
+import Image from "next/image";
 
 const NAV: Record<string, { href: string; label: string; icon: React.ElementType }[]> = {
   USER: [{ href: "/user/dashboard", label: "My Reports", icon: ClipboardList }],

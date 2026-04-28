@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import StatusBadge from "@/components/StatusBadge";
+import StatusBadge from "@/app/(main)/components/StatusBadge";
 import { MapPin, CalendarDays } from "lucide-react";
 
 export type IssueSummary = {

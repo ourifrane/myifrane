@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     const { email, password } = await req.json();
     const result = await login(email, password);
 
-    const res = NextResponse.json({ user: result.user });
+    const res = NextResponse.json({ user: result.user, token: result.token });
     res.cookies.set(COOKIE_NAME, result.token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
