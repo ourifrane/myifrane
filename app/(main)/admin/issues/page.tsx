@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import IssueCard, { IssueSummary } from "@/components/IssueCard";
-import { Loader2 } from "lucide-react";
+import { Loader2, SearchXIcon } from "lucide-react";
 
 type Filter = "ALL" | "OPEN" | "ASSIGNED" | "COMPLETED" | "CANCELLED";
 
@@ -74,8 +74,8 @@ export default function AdminIssuesPage() {
 
       {/* Issues */}
       {displayed.length === 0 ? (
-        <div className="text-center py-16 text-text-tertiary">
-          <p className="text-3xl mb-2">📭</p>
+        <div className="text-center py-16 text-text-tertiary flex flex-col items-center">
+          <p className="text-3xl mb-2"><SearchXIcon className="size-18"/></p>
           <p className="text-sm">No {filter !== "ALL" ? filter.toLowerCase() : ""} issues found.</p>
         </div>
       ) : (
