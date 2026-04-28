@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  USER
+  WORKER
+  ADMIN
+}
+
+enum IssueStatus {
+  OPEN
+  ASSIGNED
+  COMPLETED
+  CANCELLED
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  reportedIssues Issue[] @relation("ReportedBy")
+  assignedIssues Issue[] @relation("AssignedTo")
+}
+
+model Issue {
+  id          String      @id @default(cuid())
+  type        String
+  description String
+  imageUrl    String
+  latitude    Float
+  longitude   Float
+  status      IssueStatus @default(OPEN)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  reportedById String
+  reportedBy   User   @relation("ReportedBy", fields: [reportedById], references: [id])
+
+  assignedToId String?
+  assignedTo   User?  @relation("AssignedTo", fields: [assignedToId], references: [id])
+}
