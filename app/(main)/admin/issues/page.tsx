@@ -57,17 +57,28 @@ const COLUMNS: ColumnDef<FlatRow>[] = [
   { type: "date", label: "Reported", key: "createdAt", sortable: true },
 ];
 
+const STATUS_FILTERS = ["ALL", "OPEN", "ASSIGNED", "COMPLETED", "CANCELLED"] as const;
+
+type StatusFilter = (typeof STATUS_FILTERS)[number];
+
 export default function AdminIssuesPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [issues, setIssues] = useState<IssueRow[]>([]);
   const [fetching, setFetching] = useState(true);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>("ALL");
 
   useEffect(() => {
     if (loading) return;
     if (!user || user.role !== "ADMIN") { router.replace("/"); return; }
-    fetch("/api/issues").then((r) => r.json()).then(setIssues).finally(() => setFetching(false));
-  }, [user, loading, router]);
+    setFetching(true);
+
+    const url = statusFilter === "ALL" ? "/api/issues" : `/api/issues?status=${statusFilter}`;
+    fetch(url)
+      .then((r) => r.json())
+      .then((data) => setIssues(data))
+      .finally(() => setFetching(false));
+  }, [user, loading, router, statusFilter]);
 
   const rows: FlatRow[] = issues.map((i) => ({
     id: i.id,
@@ -88,9 +99,29 @@ export default function AdminIssuesPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary dark:text-neutral-100">All Issues</h1>
-        <p className="text-text-secondary text-sm mt-0.5">{issues.length} total</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary dark:text-neutral-100">All Issues</h1>
+          <p className="text-text-secondary text-sm mt-0.5">
+            {statusFilter === "ALL" ? `${issues.length} total` : `${issues.length} ${statusFilter.toLowerCase()} issue${issues.length === 1 ? "" : "s"}`}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 text-sm text-text-secondary">
+          <label htmlFor="statusFilter" className="font-medium text-text-primary dark:text-neutral-200">Filter by status</label>
+          <select
+            id="statusFilter"
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value as StatusFilter)}
+            className="rounded-xl border border-border dark:border-neutral-700 bg-white dark:bg-neutral-900 text-text-primary dark:text-neutral-100 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition"
+          >
+            {STATUS_FILTERS.map((option) => (
+              <option key={option} value={option}>
+                {option === "ALL" ? "All statuses" : option}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <MapView issues={mapPins} />
@@ -99,7 +130,7 @@ export default function AdminIssuesPage() {
         data={rows}
         columns={COLUMNS}
         loading={fetching}
-        emptyMessage="No issues found."
+        emptyMessage={statusFilter === "ALL" ? "No issues found." : `No ${statusFilter.toLowerCase()} issues found.`}
         rowHref={(row) => `/issues/${row.id}`}
       />
     </div>
