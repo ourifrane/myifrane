@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import DataTable, { STATUS_CONFIG, ColumnDef } from "@/app/(main)/components/DataTable";
 import MediaUpload from "@/app/(main)/components/MediaUpload";
+import IssueSkeleton from "@/app/(main)/components/IssueSkeleton";
 import { Add01Icon, Cancel01Icon, Location01Icon, Alert01Icon } from "hugeicons-react";
 
 const MapView = dynamic(() => import("@/app/(main)/components/MapView"), { ssr: false });
@@ -119,9 +120,7 @@ export default function UserDashboard() {
 
   const mapPins = issues.map((i) => ({ id: i.id, lat: i.latitude, lng: i.longitude, status: i.status, type: i.type }));
 
-  if (loading || fetching) return (
-    <div className="flex items-center justify-center py-20 text-text-tertiary text-sm">Loading…</div>
-  );
+  if (loading || fetching) return <IssueSkeleton rows={4} />;
 
   return (
     <div className="space-y-6">

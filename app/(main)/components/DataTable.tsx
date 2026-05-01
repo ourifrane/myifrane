@@ -15,6 +15,8 @@ import {
   Alert01Icon,
   Clock01Icon,
 } from "hugeicons-react";
+import EmptyState from "./EmptyState";
+import IssueSkeleton from "./IssueSkeleton";
 
 // ─── Relative date ────────────────────────────────────────────────────────────
 
@@ -300,7 +302,7 @@ export default function DataTable<T extends { id: string }>({
   if (loading) {
     return (
       <div className="bg-white dark:bg-neutral-900 rounded-xl border border-border dark:border-neutral-800 overflow-hidden">
-        <div className="flex items-center justify-center py-16 text-text-tertiary text-sm">Loading…</div>
+        <IssueSkeleton rows={5} variant="table" />
       </div>
     );
   }
@@ -357,8 +359,8 @@ export default function DataTable<T extends { id: string }>({
           <tbody className="divide-y divide-border dark:divide-neutral-800">
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={columns.length} className="text-center py-12 text-text-tertiary text-sm">
-                  {emptyMessage}
+                <td colSpan={columns.length} className="px-6 py-12">
+                  <EmptyState title="Nothing to show here" description={emptyMessage} />
                 </td>
               </tr>
             ) : (

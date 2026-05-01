@@ -5,6 +5,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import DataTable, { STATUS_CONFIG, ColumnDef } from "@/app/(main)/components/DataTable";
+import IssueSkeleton from "@/app/(main)/components/IssueSkeleton";
 import { Clock01Icon, Alert01Icon, CheckmarkCircle01Icon, Wrench01Icon } from "hugeicons-react";
 
 const MapView = dynamic(() => import("@/app/(main)/components/MapView"), { ssr: false });
@@ -57,9 +58,7 @@ export default function WorkerDashboard() {
     fetch("/api/issues").then((r) => r.json()).then(setIssues).finally(() => setFetching(false));
   }, [user, loading, router]);
 
-  if (loading || fetching) return (
-    <div className="flex items-center justify-center py-20 text-text-tertiary text-sm">Loading…</div>
-  );
+  if (loading || fetching) return <IssueSkeleton rows={4} />;
 
   if (!user?.approved) {
     return (

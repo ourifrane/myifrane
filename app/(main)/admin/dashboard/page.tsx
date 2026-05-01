@@ -16,6 +16,8 @@ import {
   Task01Icon,
 } from "hugeicons-react";
 import { STATUS_CONFIG, relativeTime, exactTime } from "@/app/(main)/components/DataTable";
+import EmptyState from "@/app/(main)/components/EmptyState";
+import IssueSkeleton from "@/app/(main)/components/IssueSkeleton";
 
 const MapView = dynamic(() => import("@/app/(main)/components/MapView"), { ssr: false });
 
@@ -62,9 +64,7 @@ export default function AdminDashboard() {
     setIssues((prev) => prev.map((i) => i.id === id ? { ...i, rewardPoints: pts } : i));
   }
 
-  if (loading || fetching) return (
-    <div className="flex items-center justify-center py-20 text-text-tertiary text-sm">Loading…</div>
-  );
+  if (loading || fetching) return <IssueSkeleton rows={4} />;
 
   const counts = {
     OPEN: issues.filter((i) => i.status === "OPEN").length,
@@ -132,9 +132,10 @@ export default function AdminDashboard() {
         </div>
 
         {completed.length === 0 ? (
-          <div className="text-center py-10 text-text-tertiary text-sm bg-white dark:bg-neutral-900 rounded-xl border border-border dark:border-neutral-800">
-            No completed issues yet.
-          </div>
+          <EmptyState
+            title="No completed issues yet"
+            description="No worker reports have finished yet. Once issues close, rewards will appear here."
+          />
         ) : (
           <div className="bg-white dark:bg-neutral-900 rounded-xl border border-border dark:border-neutral-800 overflow-hidden">
             <table className="w-full text-sm">
