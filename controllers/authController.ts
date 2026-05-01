@@ -88,3 +88,4 @@ export async function login(email: string, password: string): Promise<AuthResult
 export async function updateProfile(userId: string, data: UpdateProfileInput) {
   return UserModel.updateProfile(userId, data);
 }
+
