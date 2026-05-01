@@ -10,6 +10,7 @@ import {
   UserCircleIcon,
   ArrowRightBigIcon,
   Wrench01Icon,
+  Alert01Icon,
 } from "hugeicons-react";
 
 const ROLES = [
@@ -23,20 +24,40 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("USER");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    setFieldErrors({});
 
     const data = new FormData(e.currentTarget);
+    const name = data.get("name") as string;
+    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+
+    // Client-side validation
+    const errors: Record<string, string> = {};
+    if (!name.trim()) errors.name = "Full name is required";
+    if (!email) errors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Invalid email format";
+    if (!password) errors.password = "Password is required";
+    else if (password.length < 6) errors.password = "Password must be at least 6 characters";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setLoading(true);
+
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        name: data.get("name"),
-        email: data.get("email"),
-        password: data.get("password"),
+        name: name.trim(),
+        email,
+        password,
         role,
         workerNotes: role === "WORKER" ? data.get("workerNotes") : undefined,
       }),
@@ -72,8 +93,15 @@ export default function RegisterPage() {
           <div className="relative">
             <UserCircleIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" size={15} />
             <input name="name" type="text" required placeholder="Ahmed El Mansouri"
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition placeholder:text-text-tertiary" />
+              className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 transition placeholder:text-text-tertiary ${
+                fieldErrors.name ? "border-red-500 focus:ring-red-500" : "border-border dark:border-neutral-700 focus:ring-brand-500"
+              }`} />
           </div>
+          {fieldErrors.name && (
+            <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+              <Alert01Icon size={12} /> {fieldErrors.name}
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -81,8 +109,15 @@ export default function RegisterPage() {
           <div className="relative">
             <Mail01Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" size={15} />
             <input name="email" type="email" required placeholder="you@example.com"
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition placeholder:text-text-tertiary" />
+              className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 transition placeholder:text-text-tertiary ${
+                fieldErrors.email ? "border-red-500 focus:ring-red-500" : "border-border dark:border-neutral-700 focus:ring-brand-500"
+              }`} />
           </div>
+          {fieldErrors.email && (
+            <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+              <Alert01Icon size={12} /> {fieldErrors.email}
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -90,8 +125,15 @@ export default function RegisterPage() {
           <div className="relative">
             <LockPasswordIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" size={15} />
             <input name="password" type="password" required minLength={6} placeholder="At least 6 characters"
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition placeholder:text-text-tertiary" />
+              className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 transition placeholder:text-text-tertiary ${
+                fieldErrors.password ? "border-red-500 focus:ring-red-500" : "border-border dark:border-neutral-700 focus:ring-brand-500"
+              }`} />
           </div>
+          {fieldErrors.password && (
+            <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+              <Alert01Icon size={12} /> {fieldErrors.password}
+            </p>
+          )}
         </div>
 
         <div className="space-y-2">

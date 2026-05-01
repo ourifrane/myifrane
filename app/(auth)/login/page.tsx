@@ -4,24 +4,41 @@ import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
 import Link from "next/link";
-import { Mail01Icon, LockPasswordIcon, ArrowRightBigIcon } from "hugeicons-react";
+import { Mail01Icon, LockPasswordIcon, ArrowRightBigIcon, Alert01Icon } from "hugeicons-react";
 
 export default function LoginPage() {
   const { setUser, addAccount } = useAuth();
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    setFieldErrors({});
 
     const data = new FormData(e.currentTarget);
+    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+
+    // Client-side validation
+    const errors: Record<string, string> = {};
+    if (!email) errors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(email)) errors.email = "Invalid email format";
+    if (!password) errors.password = "Password is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setLoading(true);
+
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: data.get("email"), password: data.get("password") }),
+      body: JSON.stringify({ email, password }),
     });
 
     const json = await res.json();
@@ -59,9 +76,16 @@ export default function LoginPage() {
               type="email"
               required
               placeholder="you@example.com"
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition placeholder:text-text-tertiary"
+              className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 transition placeholder:text-text-tertiary ${
+                fieldErrors.email ? "border-red-500 focus:ring-red-500" : "border-border dark:border-neutral-700 focus:ring-brand-500"
+              }`}
             />
           </div>
+          {fieldErrors.email && (
+            <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+              <Alert01Icon size={12} /> {fieldErrors.email}
+            </p>
+          )}
         </div>
 
         <div className="space-y-1.5">
@@ -73,9 +97,16 @@ export default function LoginPage() {
               type="password"
               required
               placeholder="••••••••"
-              className="w-full pl-10 pr-4 py-2.5 text-sm border border-border dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition placeholder:text-text-tertiary"
+              className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 transition placeholder:text-text-tertiary ${
+                fieldErrors.password ? "border-red-500 focus:ring-red-500" : "border-border dark:border-neutral-700 focus:ring-brand-500"
+              }`}
             />
           </div>
+          {fieldErrors.password && (
+            <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+              <Alert01Icon size={12} /> {fieldErrors.password}
+            </p>
+          )}
         </div>
 
         <button
