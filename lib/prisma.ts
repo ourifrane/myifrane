@@ -1,11 +1,7 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
 
-// Prisma 7 requires a driver adapter for the database connection.
-// The DATABASE_URL is passed here at runtime (not in the schema file).
 function createPrismaClient() {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-  return new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
+  return new PrismaClient();
 }
 
 // Prevents multiple Prisma instances during Next.js hot-reload in development.
