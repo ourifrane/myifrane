@@ -30,6 +30,15 @@ export async function getIssuesForSession(session: TokenPayload, status?: IssueS
   }
 
   if (session.role === Role.WORKER) {
+    if (status === "OPEN") {
+      return IssueModel.findByStatus("OPEN");
+    }
+
+    if (status) {
+      const mine = await IssueModel.findByWorker(session.userId);
+      return mine.filter((issue) => issue.status === status);
+    }
+
     const [open, mine] = await Promise.all([
       IssueModel.findByStatus("OPEN"),
       IssueModel.findByWorker(session.userId),
