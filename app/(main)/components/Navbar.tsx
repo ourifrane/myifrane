@@ -44,8 +44,8 @@ export default function Navbar() {
   const RoleIcon = meta?.icon;
 
   return (
-    <header className="bg-white border-b border-border sticky top-0 z-50">
-      <div className="container mx-auto max-w-5xl px-4 h-14 flex items-center justify-between gap-6">
+    <header className="bg-white border-b border-border sticky top-0 z-50 shadow-md">
+      <div className="container mx-auto max-w-6xl px-6 h-16 flex items-center justify-between gap-6">
         {/* Logo */}
         <Link href="/" className="text-brand-800 font-bold text-lg tracking-tight shrink-0 flex items-center">
           <Image src="/favicon.png" width={500} height={500} alt="MyIfrane Icon" className="size-[3em]" />
