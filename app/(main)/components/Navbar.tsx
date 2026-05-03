@@ -15,8 +15,14 @@ import {
 import Image from "next/image";
 
 const NAV: Record<string, { href: string; label: string; icon: React.ElementType }[]> = {
-  USER: [{ href: "/user/dashboard", label: "My Reports", icon: ClipboardList }],
-  WORKER: [{ href: "/worker/dashboard", label: "Dashboard", icon: LayoutDashboard }],
+  USER: [
+    { href: "/user/dashboard", label: "My Reports", icon: ClipboardList },
+    { href: "/profile", label: "Profile", icon: UserCircle },
+  ],
+  WORKER: [
+    { href: "/worker/dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/profile", label: "Profile", icon: UserCircle },
+  ],
   ADMIN: [
     { href: "/admin/dashboard", label: "Overview", icon: LayoutDashboard },
     { href: "/admin/users", label: "Users", icon: Users },
