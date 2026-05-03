@@ -66,18 +66,18 @@ export default function LandingPage() {
       {/* Hero */}
       <div className="flex-1 flex flex-col items-center justify-center text-center px-6 pt-8 pb-20 gap-8">
         <div className="space-y-5 max-w-2xl">
-          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800 px-3 py-1.5 rounded-full uppercase tracking-widest">
+          <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-700 dark:text-brand-400 bg-brand-50 dark:bg-brand-900/30 border border-brand-200 dark:border-brand-800 px-3 py-1.5 rounded-full uppercase tracking-widest slideIn1">
             <Location01Icon size={11} />
             Ifrane, Morocco
           </span>
 
-          <h1 className="text-6xl font-bold text-text-primary dark:text-neutral-50 leading-[1.08] tracking-tight">
+          <h1 className="text-6xl font-bold text-text-primary dark:text-neutral-50 leading-[1.08] tracking-tight slideIn2">
             Your city.<br />
             <span className="text-brand-700 dark:text-brand-400">Your voice.</span><br />
             Our fix.
           </h1>
 
-          <p className="text-text-secondary dark:text-neutral-400 text-lg leading-relaxed max-w-lg mx-auto">
+          <p className="text-text-secondary dark:text-neutral-400 text-lg leading-relaxed max-w-lg mx-auto slideIn3">
             Spot a pothole? Broken streetlight? A fallen tree? Report it in 10 seconds.
             Workers are notified instantly.
           </p>
@@ -85,13 +85,13 @@ export default function LandingPage() {
           <div className="flex items-center justify-center gap-3 pt-2">
             <Link
               href="/register"
-              className="flex items-center gap-2 px-7 py-3.5 bg-brand-700 text-white text-sm font-semibold rounded-xl hover:bg-brand-800 transition shadow-lg shadow-brand-700/20 cursor-pointer select-none"
+              className="flex items-center gap-2 px-7 py-3.5 bg-brand-700 text-white text-sm font-semibold rounded-xl hover:bg-brand-800 transition shadow-lg shadow-brand-700/20 cursor-pointer select-none slideIn4"
             >
               Report an issue <ArrowRightBigIcon size={15} />
             </Link>
             <Link
               href="/login"
-              className="px-7 py-3.5 border-2 border-border dark:border-neutral-700 text-text-primary dark:text-neutral-200 text-sm font-semibold rounded-xl hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition cursor-pointer select-none"
+              className="px-7 py-3.5 border-2 border-border dark:border-neutral-700 text-text-primary dark:text-neutral-200 text-sm font-semibold rounded-xl hover:border-brand-400 hover:bg-brand-50 dark:hover:bg-brand-900/20 transition cursor-pointer select-none slideIn5"
             >
               Sign in
             </Link>
@@ -99,7 +99,7 @@ export default function LandingPage() {
         </div>
 
         {/* Stats band */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border dark:bg-neutral-700 border border-border dark:border-neutral-700 rounded-2xl overflow-hidden w-full max-w-2xl mt-4 shadow-sm">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-border dark:bg-neutral-700 border border-border dark:border-neutral-700 rounded-2xl overflow-hidden w-full max-w-2xl mt-4 shadow-sm slideIn6">
           {STATS.map(({ value, label }) => (
             <div key={label} className="bg-white dark:bg-neutral-900 px-6 py-5 text-center">
               <p className="text-2xl font-bold text-brand-700 dark:text-brand-400">{value}</p>
@@ -109,7 +109,7 @@ export default function LandingPage() {
         </div>
 
         {/* How it works — timeline style */}
-        <div className="w-full max-w-2xl mt-8 text-left">
+        <div className="w-full max-w-2xl mt-8 text-left slideIn7">
           <p className="text-xs font-semibold text-text-tertiary dark:text-neutral-500 uppercase tracking-widest mb-6 text-center">How it works</p>
           <div className="relative">
             <div className="absolute left-5 top-6 bottom-6 w-px bg-border dark:bg-neutral-700" />
