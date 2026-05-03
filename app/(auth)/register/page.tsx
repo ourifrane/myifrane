@@ -1,5 +1,6 @@
 "use client";
 
+import ProgressBar from "../../(main)/components/ProgressBar";
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
@@ -17,12 +18,24 @@ const ROLES = [
   { value: "WORKER", icon: Wrench01Icon, label: "Worker", desc: "Resolve issues (needs admin approval)" },
 ];
 
+
 export default function RegisterPage() {
   const { setUser, addAccount } = useAuth();
   const router = useRouter();
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [role, setRole] = useState("USER");
+
+  const [progress, setProgress] = useState(0);
+
+  function updateProgress(form: HTMLFormElement) {
+    const data = new FormData(form);
+    let completed = 0;
+    if (data.get("name")) completed++;
+    if (data.get("email")) completed++;
+    if (data.get("password")) completed++;
+    setProgress((completed / 3) * 100);
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -71,7 +84,8 @@ export default function RegisterPage() {
           <label className="text-sm font-medium text-text-primary dark:text-neutral-200">Full name</label>
           <div className="relative">
             <UserCircleIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" size={15} />
-            <input name="name" type="text" required placeholder="Ahmed El Mansouri"
+            <input name="name" type="text" required placeholder="Ahmed El Mansouri"   
+              onChange={(e) => updateProgress(e.currentTarget.form!)}
               className="w-full pl-10 pr-4 py-2.5 text-sm border border-border dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition placeholder:text-text-tertiary" />
           </div>
         </div>
@@ -81,6 +95,7 @@ export default function RegisterPage() {
           <div className="relative">
             <Mail01Icon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" size={15} />
             <input name="email" type="email" required placeholder="you@example.com"
+              onChange={(e) => updateProgress(e.currentTarget.form!)}
               className="w-full pl-10 pr-4 py-2.5 text-sm border border-border dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition placeholder:text-text-tertiary" />
           </div>
         </div>
@@ -90,6 +105,7 @@ export default function RegisterPage() {
           <div className="relative">
             <LockPasswordIcon className="absolute left-3.5 top-1/2 -translate-y-1/2 text-text-tertiary" size={15} />
             <input name="password" type="password" required minLength={6} placeholder="At least 6 characters"
+                onChange={(e) => updateProgress(e.currentTarget.form!)}
               className="w-full pl-10 pr-4 py-2.5 text-sm border border-border dark:border-neutral-700 rounded-xl bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition placeholder:text-text-tertiary" />
           </div>
         </div>
@@ -125,8 +141,10 @@ export default function RegisterPage() {
             <p className="text-xs text-amber-600 dark:text-amber-400">Your account will need admin approval before you can take issues.</p>
           </div>
         )}
+          <ProgressBar progress={progress} />
 
         <button type="submit" disabled={loading}
+          onClick={() => setProgress(100)}
           className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand-700 text-white text-sm font-semibold rounded-xl hover:bg-brand-800 transition cursor-pointer select-none disabled:opacity-60 mt-2"
         >
           {loading ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : null}
