@@ -23,8 +23,11 @@ export async function createIssue(
   return IssueModel.create({ ...input, reportedById: session.userId });
 }
 
-export async function getIssuesForSession(session: TokenPayload) {
-  if (session.role === Role.ADMIN) return IssueModel.findAll();
+export async function getIssuesForSession(session: TokenPayload, status?: IssueStatus) {
+  if (session.role === Role.ADMIN) {
+    if (status) return IssueModel.findByStatus(status);
+    return IssueModel.findAll();
+  }
 
   if (session.role === Role.WORKER) {
     const [open, mine] = await Promise.all([
@@ -35,7 +38,8 @@ export async function getIssuesForSession(session: TokenPayload) {
     return [...open, ...mine].filter((i) => (seen.has(i.id) ? false : (seen.add(i.id), true)));
   }
 
-  return IssueModel.findByReporter(session.userId);
+  const issues = await IssueModel.findByReporter(session.userId);
+  return status ? issues.filter((issue) => issue.status === status) : issues;
 }
 
 export async function getIssueById(id: string, session: TokenPayload) {

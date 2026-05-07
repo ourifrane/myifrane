@@ -10,11 +10,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, withRole } from "@/lib/middleware";
 import { getIssuesForSession, createIssue } from "@/controllers/issueController";
-import { Role } from "@prisma/client";
+import { IssueStatus, Role } from "@prisma/client";
 
-export const GET = withAuth(async (_req: NextRequest, session) => {
+export const GET = withAuth(async (req: NextRequest, session) => {
   try {
-    const issues = await getIssuesForSession(session);
+    const statusParam = req.nextUrl.searchParams.get("status") ?? undefined;
+    if (statusParam && !Object.values(IssueStatus).includes(statusParam as IssueStatus)) {
+      return NextResponse.json({ error: "Invalid status filter" }, { status: 400 });
+    }
+
+    const issues = await getIssuesForSession(session, statusParam as IssueStatus | undefined);
     return NextResponse.json(issues);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to fetch issues";
