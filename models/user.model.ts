@@ -48,8 +48,8 @@ export const UserModel = {
     return prisma.user.update({ where: { id }, data: { approved } });
   },
 
-  setRole(id: string, role: Role) {
-    return prisma.user.update({ where: { id }, data: { role } });
+  setRole(id: string, role: Role, extra?: Record<string, unknown>) {
+    return prisma.user.update({ where: { id }, data: { role, ...extra } });
   },
 
   updateProfile(id: string, data: UpdateProfileInput) {
