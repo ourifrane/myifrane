@@ -62,6 +62,7 @@ export default function UserDashboard() {
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (loading) return;
@@ -80,21 +81,36 @@ export default function UserDashboard() {
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setFormError("");
-    if (!imageUrl) return setFormError("Please upload or take a photo.");
-    if (!coords) return setFormError("Please detect your location.");
+    setFieldErrors({});
 
     const data = new FormData(e.currentTarget);
+    const type = data.get("type") as string;
+    const description = data.get("description") as string;
+
+    // Client-side validation
+    const errors: Record<string, string> = {};
+    if (!type) errors.type = "Please select an issue type";
+    if (!description.trim()) errors.description = "Description is required";
+    else if (description.trim().length < 10) errors.description = "Description must be at least 10 characters";
+    if (!imageUrl) errors.image = "Please upload or take a photo";
+    if (!coords) errors.location = "Please detect your location";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
     setSubmitting(true);
 
     const res = await fetch("/api/issues", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        type: data.get("type"),
-        description: data.get("description"),
+        type,
+        description: description.trim(),
         imageUrl,
-        latitude: coords.lat,
-        longitude: coords.lng,
+        latitude: coords!.lat,
+        longitude: coords!.lng,
       }),
     });
 
@@ -105,6 +121,7 @@ export default function UserDashboard() {
     setShowForm(false);
     setImageUrl("");
     setCoords(null);
+    setFieldErrors({});
     (e.target as HTMLFormElement).reset();
   }
 
@@ -130,12 +147,12 @@ export default function UserDashboard() {
           <p className="text-text-secondary text-sm mt-0.5">{issues.length} issue{issues.length !== 1 ? "s" : ""} submitted</p>
         </div>
         <button
-          onClick={() => { setShowForm((s) => !s); setFormError(""); }}
+          onClick={() => { setShowForm((s) => !s); setFormError(""); setFieldErrors({}); }}
           className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-xl transition cursor-pointer select-none ${
             showForm ? "bg-surface-overlay text-text-secondary hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20" : "bg-brand-700 text-white hover:bg-brand-800"
           }`}
         >
-          {showForm ? <><Cancel01Icon size={14} /> Cancel</> : <><Add01Icon size={14} /> Report issue</>}
+          {showForm ? <><Cancel01Icon size={14} /> Cancel</> : <><Add01Icon size={14} /> Report issue</> }
         </button>
       </div>
 
@@ -151,9 +168,16 @@ export default function UserDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Issue type</label>
-                <select name="type" required className="w-full border border-border dark:border-neutral-700 rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 focus:ring-brand-500 transition">
+                <select name="type" required className={`w-full border rounded-xl px-3 py-2.5 text-sm bg-white dark:bg-neutral-800 dark:text-neutral-100 focus:outline-none focus:ring-2 transition ${
+                  fieldErrors.type ? "border-red-500 focus:ring-red-500" : "border-border dark:border-neutral-700 focus:ring-brand-500"
+                }`}>
                   {ISSUE_TYPES.map((t) => <option key={t}>{t}</option>)}
                 </select>
+                {fieldErrors.type && (
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <Alert01Icon size={12} /> {fieldErrors.type}
+                  </p>
+                )}
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Location</label>
@@ -167,15 +191,32 @@ export default function UserDashboard() {
                   {locating ? <div className="w-3.5 h-3.5 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" /> : <Location01Icon size={14} />}
                   {locating ? "Detecting…" : coords ? `${coords.lat.toFixed(4)}, ${coords.lng.toFixed(4)}` : "Detect my location"}
                 </button>
+                {fieldErrors.location && (
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                    <Alert01Icon size={12} /> {fieldErrors.location}
+                  </p>
+                )}
               </div>
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Description</label>
-              <textarea name="description" required rows={3} placeholder="Describe the issue…" className="w-full border border-border dark:border-neutral-700 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition resize-none placeholder:text-text-tertiary bg-white dark:bg-neutral-800 dark:text-neutral-100" />
+              <textarea name="description" required rows={3} placeholder="Describe the issue…" className={`w-full border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 transition resize-none placeholder:text-text-tertiary bg-white dark:bg-neutral-800 dark:text-neutral-100 ${
+                fieldErrors.description ? "border-red-500 focus:ring-red-500" : "border-border dark:border-neutral-700 focus:ring-brand-500"
+              }`} />
+              {fieldErrors.description && (
+                <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <Alert01Icon size={12} /> {fieldErrors.description}
+                </p>
+              )}
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Photo</label>
               <MediaUpload onUploaded={(url) => setImageUrl(url)} />
+              {fieldErrors.image && (
+                <p className="text-xs text-red-600 dark:text-red-400 flex items-center gap-1">
+                  <Alert01Icon size={12} /> {fieldErrors.image}
+                </p>
+              )}
             </div>
             <button type="submit" disabled={submitting} className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand-700 text-white text-sm font-semibold rounded-xl hover:bg-brand-800 transition cursor-pointer select-none disabled:opacity-60">
               {submitting ? <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> : <Add01Icon size={15} />}
