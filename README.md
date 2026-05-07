@@ -37,3 +37,15 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 
 admin@myifrane.com / admin123, worker@myifrane.com / worker123, user@myifrane.com / user123.
+
+
+## Environment Variables
+Create a `.env` file in the project root with the following keys:
+
+- DATABASE_URL
+- APP_URL
+- JWT_SECRET
+- SMTP_HOST
+- SMTP_PORT
+- SMTP_USER
+- SMTP_PASS
