@@ -35,5 +35,5 @@ export async function changeUserRole(targetId: string, role: Role) {
 
   // When demoting a worker back to user, clear their approval flag
   const extra = role === Role.USER ? { approved: false } : {};
-  return UserModel.setRole(targetId, role);
+  return UserModel.setRole(targetId, role, extra);
 }
