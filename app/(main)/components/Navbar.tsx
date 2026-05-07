@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/app/context/AuthContext";
+import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
@@ -11,6 +12,8 @@ import {
   Wrench,
   ShieldCheck,
   UserCircle,
+  Menu,
+  X,
 } from "lucide-react";
 import Image from "next/image";
 
@@ -34,11 +37,14 @@ export default function Navbar() {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   async function handleLogout() {
     await logout();
     router.replace("/");
   }
+
+  const closeMobileMenu = () => setMobileMenuOpen(false);
 
   const meta = user ? ROLE_META[user.role] : null;
   const RoleIcon = meta?.icon;
@@ -47,14 +53,14 @@ export default function Navbar() {
     <header className="bg-white border-b border-border sticky top-0 z-50 shadow-md">
       <div className="container mx-auto max-w-6xl px-6 h-16 flex items-center justify-between gap-6">
         {/* Logo */}
-        <Link href="/" className="text-brand-800 font-bold text-lg tracking-tight shrink-0 flex items-center">
+        <Link href="/" className="text-brand-800 font-bold text-lg tracking-tight shrink-0 flex items-center" onClick={closeMobileMenu}>
           <Image src="/favicon.png" width={500} height={500} alt="MyIfrane Icon" className="size-[3em]" />
           MyIfrane
         </Link>
 
-        {/* Nav links */}
+        {/* Desktop Nav links */}
         {user && (
-          <nav className="flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-1">
             {NAV[user.role]?.map(({ href, label, icon: Icon }) => {
               const active = pathname.startsWith(href);
               return (
@@ -96,6 +102,14 @@ export default function Navbar() {
               <LogOut size={14} />
               <span className="hidden sm:inline">Sign out</span>
             </button>
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              title="Menu"
+              className="md:hidden p-1.5 rounded-lg text-text-secondary hover:text-text-primary hover:bg-surface-overlay transition"
+            >
+              {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+            </button>
           </div>
         ) : (
           <div className="flex items-center gap-2 ml-auto">
@@ -108,6 +122,52 @@ export default function Navbar() {
           </div>
         )}
       </div>
+
+      {/* Mobile Menu Drawer */}
+      {user && mobileMenuOpen && (
+        <>
+          {/* Backdrop */}
+          <div
+            className="md:hidden fixed inset-0 top-14 bg-black/20 z-40"
+            onClick={closeMobileMenu}
+          />
+          {/* Menu */}
+          <div className="md:hidden absolute top-14 left-0 right-0 bg-white border-b border-border z-40 shadow-lg">
+            <nav className="flex flex-col gap-1 p-4">
+              {NAV[user.role]?.map(({ href, label, icon: Icon }) => {
+                const active = pathname.startsWith(href);
+                return (
+                  <Link
+                    key={href}
+                    href={href}
+                    onClick={closeMobileMenu}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                      active
+                        ? "bg-brand-50 text-brand-700"
+                        : "text-text-secondary hover:text-text-primary hover:bg-surface-overlay"
+                    }`}
+                  >
+                    <Icon size={16} />
+                    {label}
+                  </Link>
+                );
+              })}
+              {/* Mobile: Show role + name in drawer */}
+              <div className="sm:hidden mt-3 pt-3 border-t border-border">
+                <div className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold ${meta?.color}`}>
+                  {RoleIcon && <RoleIcon size={14} />}
+                  <span>{user.name}</span>
+                  {user.role === "WORKER" && !user.approved && (
+                    <span className="ml-auto bg-amber-200 text-amber-800 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                      PENDING
+                    </span>
+                  )}
+                </div>
+              </div>
+            </nav>
+          </div>
+        </>
+      )}
     </header>
   );
 }
