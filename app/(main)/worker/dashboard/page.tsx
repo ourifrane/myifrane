@@ -49,12 +49,25 @@ export default function WorkerDashboard() {
   const router = useRouter();
   const [issues, setIssues] = useState<IssueRow[]>([]);
   const [fetching, setFetching] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [tab, setTab] = useState<"open" | "mine">("open");
+
+  const fetchIssues = async () => {
+    setFetching(true);
+    try {
+      const response = await fetch("/api/issues");
+      const data = await response.json();
+      setIssues(data);
+    } finally {
+      setFetching(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
     if (!user || user.role !== "WORKER") { router.replace("/"); return; }
-    fetch("/api/issues").then((r) => r.json()).then(setIssues).finally(() => setFetching(false));
+    fetchIssues();
   }, [user, loading, router]);
 
   if (loading || fetching) return (
@@ -105,11 +118,21 @@ export default function WorkerDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary dark:text-neutral-100">Worker Dashboard</h1>
-        <p className="text-text-secondary text-sm mt-0.5">
-          {openIssues.length} open · {myIssues.filter((i) => i.status === "ASSIGNED").length} assigned · {completedByMe.length} completed by you
-        </p>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary dark:text-neutral-100">Worker Dashboard</h1>
+          <p className="text-text-secondary text-sm mt-0.5">
+            {openIssues.length} open · {myIssues.filter((i) => i.status === "ASSIGNED").length} assigned · {completedByMe.length} completed by you
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => { setRefreshing(true); fetchIssues(); }}
+          disabled={fetching}
+          className="inline-flex items-center justify-center rounded-xl border border-border bg-surface-raised px-4 py-2 text-sm font-medium text-text-primary transition hover:border-text-primary hover:text-text-primary disabled:cursor-not-allowed disabled:opacity-50 dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          {refreshing ? "Refreshing…" : "Refresh issues"}
+        </button>
       </div>
 
       {/* Stat pills */}
