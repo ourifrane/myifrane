@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withAuth, withRole } from "@/lib/middleware";
 import { getIssueById, updateIssueStatus } from "@/controllers/issueController";
+import { toStatusCode } from "@/lib/api-error";
 import { IssueStatus, Role } from "@prisma/client";
 
 export const GET = withAuth(async (req: NextRequest, session) => {
@@ -10,8 +11,7 @@ export const GET = withAuth(async (req: NextRequest, session) => {
     return NextResponse.json(issue);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to fetch issue";
-    const status = message.includes("not found") ? 404 : message.includes("authorised") ? 403 : 500;
-    return NextResponse.json({ error: message }, { status });
+    return NextResponse.json({ error: message }, { status: toStatusCode(err, 500) });
   }
 });
 
@@ -34,6 +34,6 @@ export const PATCH = withRole([Role.WORKER, Role.ADMIN], async (req: NextRequest
     return NextResponse.json(updated);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to update issue";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: message }, { status: toStatusCode(err) });
   }
 });

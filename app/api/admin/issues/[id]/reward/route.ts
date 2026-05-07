@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withRole } from "@/lib/middleware";
 import { setIssueReward } from "@/controllers/issueController";
+import { toStatusCode } from "@/lib/api-error";
 import { Role } from "@prisma/client";
 
 export const PATCH = withRole([Role.ADMIN], async (req: NextRequest, session) => {
@@ -16,6 +17,6 @@ export const PATCH = withRole([Role.ADMIN], async (req: NextRequest, session) =>
     return NextResponse.json(updated);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to set reward";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: message }, { status: toStatusCode(err) });
   }
 });

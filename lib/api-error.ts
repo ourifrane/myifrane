@@ -16,6 +16,18 @@ const INTERNAL_PATTERNS = [
   "p2",
 ];
 
+export function toStatusCode(err: unknown, defaultStatus = 400): number {
+  if (!(err instanceof Error)) return defaultStatus;
+  const msg = err.message.toLowerCase();
+  if (msg.includes("not found")) return 404;
+  if (
+    msg.includes("not authoris") ||
+    msg.includes("not approved") ||
+    msg.includes("only admin")
+  ) return 403;
+  return defaultStatus;
+}
+
 export function apiError(err: unknown, fallback = "Something went wrong"): string {
   if (!(err instanceof Error)) return fallback;
 

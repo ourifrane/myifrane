@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withRole } from "@/lib/middleware";
 import { setWorkerApproval } from "@/controllers/userController";
+import { toStatusCode } from "@/lib/api-error";
 import { Role } from "@prisma/client";
 
 export const PATCH = withRole([Role.ADMIN], async (req: NextRequest) => {
@@ -24,6 +25,6 @@ export const PATCH = withRole([Role.ADMIN], async (req: NextRequest) => {
     return NextResponse.json(user);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to update approval";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: message }, { status: toStatusCode(err) });
   }
 });

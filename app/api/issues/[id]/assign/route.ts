@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { withApprovedWorker } from "@/lib/middleware";
 import { assignIssue } from "@/controllers/issueController";
+import { toStatusCode } from "@/lib/api-error";
 
 export const POST = withApprovedWorker(async (req: NextRequest, session) => {
   try {
@@ -16,6 +17,6 @@ export const POST = withApprovedWorker(async (req: NextRequest, session) => {
     return NextResponse.json(issue);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Failed to assign issue";
-    return NextResponse.json({ error: message }, { status: 400 });
+    return NextResponse.json({ error: message }, { status: toStatusCode(err) });
   }
 });
