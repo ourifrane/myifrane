@@ -27,6 +27,7 @@ model User {
   password    String
   role        Role     @default(USER)
   approved    Boolean  @default(false)
+  verified    Boolean  @default(false)
   avatarUrl   String?
   displayName String?
   workerNotes String?
@@ -34,6 +35,13 @@ model User {
 
   reportedIssues Issue[] @relation("ReportedBy")
   assignedIssues Issue[] @relation("AssignedTo")
+}
+
+model VerificationToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  createdAt DateTime @default(now())
 }
 
 model Issue {

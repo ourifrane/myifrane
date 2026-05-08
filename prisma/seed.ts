@@ -1,11 +1,7 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaPg } from "@prisma/adapter-pg";
 import bcrypt from "bcryptjs";
-import dotenv from "dotenv";
-dotenv.config();
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
-const prisma = new PrismaClient({ adapter } as ConstructorParameters<typeof PrismaClient>[0]);
+const prisma = new PrismaClient();
 
 const hash = (pw: string) => bcrypt.hash(pw, 10);
 
@@ -176,7 +172,7 @@ async function main() {
     create: {
       name: "MyIfrane Admin",
       email: "admin@myifrane.com",
-      password: await hash("admin123"),
+      password: await hash("password"),
       role: "ADMIN",
       approved: true,
     },
@@ -188,7 +184,7 @@ async function main() {
     create: {
       name: "AUI Admin",
       email: "admin@aui.ma",
-      password: await hash("admin123"),
+      password: await hash("password"),
       role: "ADMIN",
       approved: true,
     },
@@ -223,7 +219,7 @@ async function main() {
         create: {
           name: w.name,
           email: w.email,
-          password: await hash("worker123"),
+          password: await hash("password"),
           role: "WORKER",
           approved: w.approved,
           workerNotes: w.notes,
@@ -271,7 +267,7 @@ async function main() {
         create: {
           name: c.name,
           email: c.email,
-          password: await hash("citizen123"),
+          password: await hash("password"),
           role: "USER",
           approved: false,
         },
@@ -344,11 +340,11 @@ async function main() {
 
   console.log(`✓ ${created} issues created`);
   console.log("\n📋 Login credentials:");
-  console.log("  admin@myifrane.com / admin123 (Admin)");
-  console.log("  admin@aui.ma / admin123 (Admin)");
-  console.log("  youssef@workers.ma / worker123 (Worker, approved)");
-  console.log("  amine@workers.ma / worker123 (Worker, pending)");
-  console.log("  layla@citizens.ma / citizen123 (Citizen)");
+  console.log("  admin@myifrane.com / password (Admin)");
+  console.log("  admin@aui.ma / password (Admin)");
+  console.log("  youssef@workers.ma / password (Worker, approved)");
+  console.log("  amine@workers.ma / password (Worker, pending)");
+  console.log("  layla@citizens.ma / password (Citizen)");
   console.log("\n✅ Seed complete!");
 }
 
