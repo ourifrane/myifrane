@@ -109,23 +109,23 @@ export default function LandingPage() {
         </div>
 
         {/* How it works — timeline style */}
-        <div className="w-full max-w-2xl mt-8 text-left">
-          <p className="text-xs font-semibold text-text-tertiary dark:text-neutral-500 uppercase tracking-widest mb-6 text-center">How it works</p>
+        <div className="w-full max-w-2xl mt-12 text-left">
+          <p className="text-sm font-semibold text-text-tertiary dark:text-neutral-500 uppercase tracking-widest mb-8 text-center">How it works</p>
           <div className="relative">
-            <div className="absolute left-5 top-6 bottom-6 w-px bg-border dark:bg-neutral-700" />
+            <div className="absolute left-6 top-6 bottom-6 w-px bg-border dark:bg-neutral-700" />
             {[
               { icon: Location01Icon, color: "text-blue-600 bg-blue-50 dark:bg-blue-900/30", title: "You spot a problem", desc: "Take a photo, drop your location. Done in 10 seconds." },
               { icon: Wrench01Icon,   color: "text-amber-600 bg-amber-50 dark:bg-amber-900/30", title: "A worker picks it up", desc: "Approved city workers self-assign and head to the scene." },
               { icon: CheckmarkCircle01Icon, color: "text-brand-700 bg-brand-50 dark:bg-brand-900/30", title: "Fixed & closed", desc: "Worker uploads proof. Issue marked resolved. Points rewarded." },
               { icon: ShieldUserIcon, color: "text-purple-600 bg-purple-50 dark:bg-purple-900/30", title: "Admins keep watch", desc: "Real-time dashboard. Rewards top workers. Full accountability." },
             ].map(({ icon: Icon, color, title, desc }, i) => (
-              <div key={i} className="flex items-start gap-5 mb-6 last:mb-0">
-                <div className={`w-10 h-10 rounded-xl ${color.split(" ").slice(1).join(" ")} flex items-center justify-center shrink-0 relative z-10`}>
-                  <Icon size={18} className={color.split(" ")[0]} />
+              <div key={i} className="flex items-start gap-5 mb-8 last:mb-0">
+                <div className={`w-12 h-12 rounded-xl ${color.split(" ").slice(1).join(" ")} flex items-center justify-center shrink-0 relative z-10`}>
+                  <Icon size={22} className={color.split(" ")[0]} />
                 </div>
-                <div className="pt-1.5">
-                  <p className="font-semibold text-text-primary dark:text-neutral-100 text-sm">{title}</p>
-                  <p className="text-text-secondary dark:text-neutral-400 text-xs mt-0.5 leading-relaxed">{desc}</p>
+                <div className="pt-2">
+                  <p className="font-semibold text-text-primary dark:text-neutral-100 text-base">{title}</p>
+                  <p className="text-text-secondary dark:text-neutral-400 text-sm mt-1 leading-relaxed">{desc}</p>
                 </div>
               </div>
             ))}

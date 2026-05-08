@@ -105,7 +105,7 @@ export default function AdminDashboard() {
         {STATS.map(({ key, icon: Icon }) => {
           const cfg = STATUS_CONFIG[key];
           return (
-            <div key={key} className={`${cfg.bg} rounded-xl p-4 border ${key === "OPEN" ? "border-blue-200 dark:border-blue-800" : key === "ASSIGNED" ? "border-amber-200 dark:border-amber-800" : key === "COMPLETED" ? "border-brand-200 dark:border-brand-800" : "border-gray-200 dark:border-gray-700"}`}>
+            <div key={key} className="bg-white dark:bg-neutral-900 rounded-xl p-4 border border-border dark:border-neutral-800">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-xs font-semibold text-text-secondary dark:text-neutral-400">{cfg.label}</span>
                 <Icon size={14} className={cfg.text} />
@@ -120,6 +120,19 @@ export default function AdminDashboard() {
       <div>
         <h2 className="font-semibold text-text-primary dark:text-neutral-100 text-sm mb-3">Issues map</h2>
         <MapView issues={mapPins} height={440} />
+        <div className="flex flex-wrap items-center gap-5 mt-3 px-1">
+          {[
+            { color: "#3b82f6", label: "Open" },
+            { color: "#f59e0b", label: "Assigned" },
+            { color: "#16a34a", label: "Completed" },
+            { color: "#9ca3af", label: "Cancelled" },
+          ].map(({ color, label }) => (
+            <span key={label} className="flex items-center gap-1.5 text-xs text-text-secondary dark:text-neutral-400">
+              <span style={{ background: color }} className="w-2.5 h-2.5 rounded-full inline-block shrink-0" />
+              {label}
+            </span>
+          ))}
+        </div>
       </div>
 
       {/* Completed issues + rewards */}
@@ -160,7 +173,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="px-4 py-3">
                       <span title={exactTime(issue.updatedAt)} className="text-xs text-text-secondary dark:text-neutral-400 cursor-default">
-                        {relativeTime(issue.updatedAt)}
+                        {new Date(issue.updatedAt).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -189,13 +202,21 @@ export default function AdminDashboard() {
                             ✕
                           </button>
                         </div>
-                      ) : (
+                      ) : issue.rewardPoints != null ? (
                         <button
                           onClick={() => { setRewardId(issue.id); setRewardInput((p) => ({ ...p, [issue.id]: issue.rewardPoints?.toString() ?? "" })); }}
-                          className="flex items-center gap-1.5 px-3 py-1 border border-border dark:border-neutral-700 text-text-secondary text-xs font-semibold rounded-lg hover:border-brand-400 hover:text-brand-700 transition cursor-pointer select-none"
+                          className="flex items-center gap-1.5 px-3 py-1 bg-brand-700 text-white text-xs font-semibold rounded-lg hover:bg-brand-800 transition cursor-pointer select-none"
                         >
                           <Coins01Icon size={12} />
-                          {issue.rewardPoints != null ? `${issue.rewardPoints} pts` : "Set reward"}
+                          {issue.rewardPoints} pts
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => { setRewardId(issue.id); setRewardInput((p) => ({ ...p, [issue.id]: "" })); }}
+                          className="flex items-center gap-1.5 px-3 py-1 border border-dashed border-border dark:border-neutral-600 text-text-tertiary text-xs font-semibold rounded-lg hover:border-brand-400 hover:text-brand-700 transition cursor-pointer select-none"
+                        >
+                          <Coins01Icon size={12} />
+                          Set reward
                         </button>
                       )}
                     </td>
